@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Quiz Master</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if request.endpoint == 'admin_dashboard' %}
+            <!-- Admin Dashboard -->
+            <h2>Admin Dashboard</h2>
+            <div class="row mt-4">
+                <!-- Subject Management -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Add Subject</h4>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('add_subject') }}" method="POST">
+                                <div class="mb-3">
+                                    <label for="subject_name" class="form-label">Subject Name</label>
+                                    <input type="text" class="form-control" id="subject_name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject_description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="subject_description" name="description"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Subject</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- List of Subjects -->
+                    <div class="mt-4">
+                        <h4>Subjects</h4>
+                        {% for subject in subjects %}
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    {{ subject.name }}
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ subject.description }}</p>
+                                    
+                                    <!-- Add Chapter Form -->
+                                    <form action="{{ url_for('add_chapter', subject_id=subject.id) }}" method="POST" class="mb-3">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" name="name" placeholder="Chapter name" required>
+                                            <button type="submit" class="btn btn-outline-primary">Add Chapter</button>
+                                        </div>
+                                    </form>
+
+                                    <!-- List Chapters -->
+                                    {% for chapter in subject.chapters %}
+                                        <div class="card mb-2">
+                                            <div class="card-body">
+                                                <h6>{{ chapter.name }}</h6>
+                                                
+                                                <!-- Add Quiz Form -->
+                                                <form action="{{ url_for('add_quiz', chapter_id=chapter.id) }}" method="POST" class="mb-2">
+                                                    <div class="input-group">
+                                                        <input type="date" class="form-control" name="date" required>
+                                                        <input type="number" class="form-control" name="duration" placeholder="Duration (minutes)" required>
+                                                        <button type="submit" class="btn btn-outline-secondary">Add Quiz</button>
+                                                    </div>
+                                                </form>
+
+                                                <!-- List Quizzes -->
+                                                {% for quiz in chapter.quizzes %}
+                                                    <div class="card mb-2">
+                                                        <div class="card-body">
+                                                            <p>Quiz Date: {{ quiz.date_of_quiz }}, Duration: {{ quiz.time_duration }} minutes</p>
+                                                            
+                                                            <!-- Add Question Form -->
+                                                            <form action="{{ url_for('add_question', quiz_id=quiz.id) }}" method="POST">
+                                                                <div class="mb-2">
+                                                                    <input type="text" class="form-control" name="question" placeholder="Question text" required>
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <input type="text" class="form-control" name="option1" placeholder="Option 1" required>
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <input type="text" class="form-control" name="option2" placeholder="Option 2" required>
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <input type="text" class="form-control" name="option3" placeholder="Option 3" required>
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <input type="text" class="form-control" name="option4" placeholder="Option 4" required>
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <select class="form-control" name="correct_option" required>
+                                                                        <option value="">Select correct option</option>
+                                                                        <option value="1">Option 1</option>
+                                                                        <option value="2">Option 2</option>
+                                                                        <option value="3">Option 3</option>
+                                                                        <option value="4">Option 4</option>
+                                                                    </select>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-sm btn-primary">Add Question</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- User Management -->
+                <div class="col-md-6">
+                    <h4>Registered Users</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="list-group">
+                                {% for user in users %}
+                                    <div class="list-group-item">
+                                        <h6>{{ user.full_name }}</h6>
+                                        <p class="mb-1">Email: {{ user.email }}</p>
+                                        <small>Qualification: {{ user.qualification }}</small>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% elif mode == 'quiz' %}
+            <!-- Quiz Taking Interface -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h4>
+                    <p>Time Duration: {{ quiz.time_duration }} minutes</p>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}" method="POST">
+                        {% for question in questions %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <p class="mb-3">{{ loop.index }}. {{ question.question_text }}</p>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="1" required>
+                                        <label class="form-check-label">{{ question.option_1 }}</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="2">
+                                        <label class="form-check-label">{{ question.option_2 }}</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="3">
+                                        <label class="form-check-label">{{ question.option_3 }}</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="4">
+                                        <label class="form-check-label">{{ question.option_4 }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Submit Quiz</button>
+                    </form>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- User Dashboard -->
+            <h2>User Dashboard</h2>
+            <div class="row mt-4">
+                <!-- Available Quizzes -->
+                <div class="col-md-8">
+                    <h4>Available Quizzes</h4>
+                    {% for subject in subjects %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5>{{ subject.name }}</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for chapter in subject.chapters %}
+                                    <div class="card mb-2">
+                                        <div class="card-body">
+                                            <h6>{{ chapter.name }}</h6>
+                                            {% for quiz in chapter.quizzes %}
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span>Quiz Date: {{ quiz.date_of_quiz }}</span>
+                                                    <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" 
+                                                       class="btn btn-sm btn-primary">Take Quiz</a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- User's Scores -->
+                <div class="col-md-4">
+                    <h4>Your Scores</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            {% for score in scores %}
+                                <div class="card mb-2">
+                                    <div class="card-body">
+                                        <h6>{{ score.quiz.chapter.subject.name }} - {{ score.quiz.chapter.name }}</h6>
+                                        <p class="mb-1">Score: {{ "%.2f"|format(score.score) }}%</p>
+                                        <small>Attempted on: {{ score.attempt_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
